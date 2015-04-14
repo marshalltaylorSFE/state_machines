@@ -1,6 +1,6 @@
 ## State Machines:  Blink.ino learns how to snooze
 
-I'm a big fan of state machines.  Almost every arduino sketch usually ends up with one (intentional) state machine, and a bunch of non-intentional state machines as well.  Here, I'll introduce the concept of state machines apply a state machine to a microcontroller's "Hello world!", the blink routine.  After that I'll explore some more complicated state machines.
+I'm a big fan of state machines.  Almost every arduino sketch usually ends up at least with one intentional state machine, and a bunch of non-intentional state machines as well.  Here, I'll introduce the concept of state machines apply a state machine to a microcontroller's "Hello world!", the blink routine.  After that I'll explore some more complicated state machines.
 
 ### Expected background
 * C/C++ branch statements
@@ -10,35 +10,43 @@ I'm a big fan of state machines.  Almost every arduino sketch usually ends up wi
 ### What is a state machine
 A 'state' is the condition of a thing, at a specific time.  Something that can accomplish tasks that utilizes states at its core is a state machine.  Also known as a Finite State Machine (FSM) meaning that we know all possible states of the thing.
 
-That's some academic mumbo-jumbo though.  It's just a piece of memory that holds *some value* until some time source comes along and tells it to adopt *some new value* based on what it was, and whatever else the designer wanted.  It's a thing with some per-determined set of states, a memory element that holds the current state, and a time element that causes the state machine to move.  I like to call it 'ticking'.
+That's some academic mumbo-jumbo though.  A state machine is just a piece of memory that holds *some value* until some time source comes along and tells it to adopt *some new value* based on what it was, and whatever else the designer wanted.  It's a thing with some per-determined set of states, a memory element that holds the current state, and a time element that causes the state machine to move.  I like to call it 'ticking'.
 
 A classic example of a state machine is a counter.  An incrementing for loop for example, or a 74x4040 12 bit binary counter for the hardware folks.  Each time the machine is poked, either by the clock or loop, the state of the memory changes to a new state equaling the old state plus one.  The finite set of states it can exist is the numbers it can count.
 
 Let's take at some diagrams!
 
+-> [![alt text](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/counter_logic.png)](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/counter_logic.png) <-
+
+->[![alt text](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/Counter_sm.png)](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/Counter_sm.png)<-
 
 
 #### Moore State Machine
 So there's this guy, Edward Moore, who writes a paper in 1956 (__Gedanken-experiments on Sequential Machines__).  He says the output is dependent only on the state, and the next state is dependen on the current state (or output), and the input.
 
-![alt text](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Logo Title Text 1")
+-> [![alt text](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/moore1.png)](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/moore1.png) <-
 
 #### Mealy State Machine
 Then there's this other guy, George Mealy.  He wrote a paper one year earlier than Moore entitled __A Method for Synthesizing Sequential Circuits__ where he goes into great depths about creating state machines from mathematical functions, and describes those state machine's output's in terms of their inputs.
 
-![alt text](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Logo Title Text 1")
+-> [![alt text](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/mealy1.png)](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/mealy1.png) <-
+
+-> [![alt text](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/mealy2.png)](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/mealy2.png) <-
 
 #### Abstract Diagram
 I find that when programming up state machines in C, the distinction between Moore or Mealy isn't as important.  I kind of mix the two.  Some states have a static value, while other times the transition between states is the information.  I put the static outputs under the state name and the conditions/events that happen on state transition by the arrows.  The diagram is an abstract representation of the program.  When designing a state machine, it's OK if the diagram isn't quite right the first time.  For me, drawing the machine proves what I do and do not know yet.  It can always be refined later when the bugs come out.
 
-![alt text](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Logo Title Text 1")
+-> [![alt text](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/state_diagram_form.png)](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/state_diagram_form.png) <-
 
+-> [![alt text](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/implicit_state.png)](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/implicit_state.png) <-
+
+-> [![alt text](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/explicit_state.png)](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/explicit_state.png) <-
 
 ### The blink.ino Sketch
 #### blink_fsm.ino
 I'll start by re-writing the familiar blink.ino sketch with the behavior and syntax of a state machine, using a switch-case.  The example is to light the LED for 1 second, turn it off for 1 second, and repeat.  Here there are two states, LED_ON and LED_OFF
 
-![alt text](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Logo Title Text 1")
+-> [![alt text](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/blink_fsm_1.png)](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/blink_fsm_1.png) <-
 
 In each state, the LED value is shown under the line.  The arrows are each labeled TRUE because no matter what, move to the next state.  This state machine doesn't have any inputs.  Every second, we'll evaulate the state machine.  If the state is 1, the output is 1 and move to the state 0.  Here's the C implementation:
 
@@ -56,8 +64,7 @@ note:  the extra code associated with the processing of the state machine will c
 #### blink_fsm_ms.ino
 Next I want to speed up the state machine's 'tick'.  I prevent the states from progressing until some timer has expired.  The timer counts every ms, so I'll wait 1000 ticks a second.  When it expires, I'll write the new state to the LED and change states.  The motivation to this is being able to have the processor do something else while the state machine is waiting.
 
-
-![alt text](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Logo Title Text 1")
+-> [![alt text](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/blink_fsm_ms.png)](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/blink_fsm_ms.png) <-
 
 The C implementation
 
@@ -71,13 +78,14 @@ The state machine works but I'm not terribly happy about how it came out.  Notic
 
 #### blink_fsm_final
 
-![alt text](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Logo Title Text 1")
+-> [![alt text](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/blink_fsm_final.png)](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/blink_fsm_final.png) <-
 
 Here, the states LED_ON and LED_OFF write to the LED, clear the counter, and move on.  The counter is modified to 999 to account for the extra state, though we're getting farther off time the faster we run the clock.  The ratio of state-machine-processing-time to delay(1)-execution-time is getting higher as the speed increases, and the percentage error goes up with it.
 
 Full source file (github): [blink_fsm_final.ino](https://github.com/marshalltaylorSFE/state_machines/raw/master/blink_fsm_final/blink_fsm_final.ino)
 
 ```
+
 ```
 
 **Pro Tip:**  Run the msCounts incrementer with a 1 ms timer Interrupt Service Routine (ISR) instead.  Meanwhile, loop the FSM as fast as possible.  This will correct timing.  Keep in mind that if the code execution time between ISR calls (the state machine processing time) is longer than the ISR call interval, the program will most likely lock up.
@@ -100,7 +108,7 @@ There are a few more, like time set and alarm set inputs, but this example limit
 
 Described as a state machine:
 
-![alt text](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Logo Title Text 1")
+-> [![alt text](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/alarm_clock.png)](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/alarm_clock.png) <-
 
 (caption)
 
@@ -119,9 +127,9 @@ Full source file (github): [alarm_clock.ino](https://github.com/marshalltaylorSF
 ```
 To connect the two state machines, an input to the blink_fsm is added.  This input prevents the LED from being set if the alarm_fsm is not in the alarm state.
 
-The full diagram:
+The modified state of the blink state machine
 
-![alt text](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Logo Title Text 1")
+-> [![alt text](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/alarm_clock_blink_mod.png)](https://cdn.sparkfun.com/assets/home_page_posts/1/8/0/1/alarm_clock_blink_mod.png) <-
 
 ### More Examples
 
