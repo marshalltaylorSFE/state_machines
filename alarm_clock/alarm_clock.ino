@@ -34,21 +34,19 @@ void setup()
 // the loop function runs over and over again forever
 void loop()
 {
-  //state machine
-  uint8_t next_timer_fsm_state = timer_fsm_state;  //Next state defaults to current state
-
+  //timer state machine
   switch (timer_fsm_state)
   {
     case LED_OFF:
       //Statements to execute every time LED_OFF is reached
       digitalWrite(13, LOW);
-      next_timer_fsm_state = LED_ON_WAIT;
+      timer_fsm_state = LED_ON_WAIT;
       break;
     case LED_ON_WAIT:
       //Statements to execute every time LED_OFF_WAIT is reached
       if(msCounts >= 1000)
       {
-        next_timer_fsm_state = LED_ON;
+        timer_fsm_state = LED_ON;
         msCounts = 0;
       }
       break;
@@ -58,13 +56,13 @@ void loop()
       {
         digitalWrite(13, HIGH);
       }
-      next_timer_fsm_state = LED_OFF_WAIT;
+      timer_fsm_state = LED_OFF_WAIT;
       break;
     case LED_OFF_WAIT:
       //Statements to execute every time LED_ON_WAIT is reached
       if(msCounts >= 1000)
       {
-        next_timer_fsm_state = LED_OFF;
+        timer_fsm_state = LED_OFF;
         msCounts = 0;
         if( sCounts < 0xFFFF )
         {
@@ -75,33 +73,31 @@ void loop()
     default:
       break;
   }
-  timer_fsm_state = next_timer_fsm_state;
 
+  uint8_t buttonValue = digitalRead(7);
+  uint8_t switchValue = digitalRead(9);
 
-
-  //state machine 2
-  uint8_t next_alarm_fsm_state = alarm_fsm_state;  //Next state defaults to current state
-
+  //alarm state machine
   switch (alarm_fsm_state)
   {
     case ALARM_IDLE:
-      if((sCounts >= nextAlarmTime)&&(digitalRead(9) == 1))
+      if((sCounts >= nextAlarmTime)&&(switchValue == 0))
       {
         //Goto next state
-        next_alarm_fsm_state = ALARM_RINGING;
+        alarm_fsm_state = ALARM_RINGING;
         alarmActive = 1;
       }
       break;
     case ALARM_RINGING:
-      if(digitalRead(7) == 1)
+      if(buttonValue == 0)
       {
         nextAlarmTime = sCounts + SNOOZE_SECONDS;
-        next_alarm_fsm_state = ALARM_SNOOZING;
+        alarm_fsm_state = ALARM_SNOOZING;
         alarmActive = 0;
       }
-      if(digitalRead(9) == 0)//If switch went off, goto idle instead
+      if(digitalRead(9) == 1)//If switch went off, goto idle instead
       {
-        next_alarm_fsm_state = ALARM_IDLE;  // this overwrites the snooze button option
+        alarm_fsm_state = ALARM_IDLE;  // this overwrites the snooze button option
         alarmActive = 0;
       }
       break;
@@ -109,20 +105,18 @@ void loop()
       if(sCounts >= nextAlarmTime)
       {
         //Goto next state
-        next_alarm_fsm_state = ALARM_RINGING;
+        alarm_fsm_state = ALARM_RINGING;
         alarmActive = 1;
       }
-      if(digitalRead(9) == 0)
+      if(switchValue == 0)
       {
         //Goto alarm idle
-        next_alarm_fsm_state = ALARM_IDLE;
+        alarm_fsm_state = ALARM_IDLE;
       }
       break;
     default:
       break;
   }
-  alarm_fsm_state = next_alarm_fsm_state;
-
 
 
   delay(1);              // wait for a millisecond

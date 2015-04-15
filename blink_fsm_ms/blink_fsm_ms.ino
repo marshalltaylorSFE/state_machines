@@ -1,7 +1,11 @@
+//Define the states of the machine
 #define LED_OFF 0
 #define LED_ON 1
 
+//This is the memory element that contains the state variable
 uint8_t fsm_state = LED_OFF;
+
+//This holds the number of milliseconds that have been counted
 uint16_t msCounts = 0;
 
 
@@ -41,6 +45,7 @@ void loop()
       break;
   }
 
+  //Time keeping:
   delay(1);              // wait for a millisecond
   if(msCounts < 0xFFFF)  // Don't let the msCounts overflow
   {

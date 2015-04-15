@@ -2,7 +2,7 @@
 #define LED_OFF 0
 #define LED_ON 1
 
-//Here is the state variable
+//This is the memory element that contains the state variable
 uint8_t fsm_state = LED_OFF;
 
 
